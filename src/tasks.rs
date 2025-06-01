@@ -4,7 +4,4 @@ pub fn dummy_task() {
     std::hint::black_box(var);
 }
 
-pub fn dummy_io_task() {
-    std::println!("Dummy print");
-}
 
