@@ -5,7 +5,12 @@ edition = "2021"
 
 [dependencies]
 clap = { version = "4.5.39", features = ["derive"] }
+criterion = "0.6.0"
 log = "0.4.27"
 num_cpus = "1.16.0"
 simple_logger = "5.0.0"
 tokio = { version = "1", features = ["full"] }
+
+[[bench]]
+name = "benchmarks"
+harness = false
