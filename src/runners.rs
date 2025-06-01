@@ -2,19 +2,21 @@
 
 pub fn serial(threads: usize, tasks: u32, task: fn())
 {
-    let mut handles = Vec::with_capacity(tasks as usize);
+    let barrier = std::sync::Arc::new(tokio::sync::Barrier::new(tasks as usize + 1));
     let rt = tokio::runtime::Builder::new_multi_thread()
         .worker_threads(threads.into())
         .build()
         .unwrap();
     for _ in 0..tasks {
-        handles.push(rt.spawn(async move { task() }));
+        let barrier_clone = barrier.clone();
+        rt.spawn(async move {
+            task();
+            barrier_clone.wait().await;
+        });
     }
 
     rt.block_on(async {
-        for handle in handles {
-            handle.await.unwrap();
-        }
+        barrier.wait().await;
     });
 }
 
@@ -22,8 +24,7 @@ pub fn parallel(threads: usize, tasks: u32, task: fn()) {
     let tasks_per_thread: usize = (tasks as f32 / threads as f32) as usize;
     let remaining_tasks: usize = (tasks as f32 % threads as f32) as usize;
 
-    let tasks_handle = std::sync::Arc::new(tokio::sync::Mutex::new(Vec::with_capacity(tasks as usize)));
-    let mut threads_handle = Vec::with_capacity(threads as usize);
+    let barrier = std::sync::Arc::new(tokio::sync::Barrier::new(tasks as usize + 1));
     let rt = tokio::runtime::Builder::new_multi_thread()
         .worker_threads(threads.into())
         .build()
@@ -33,24 +34,20 @@ pub fn parallel(threads: usize, tasks: u32, task: fn()) {
         if i < remaining_tasks {
             current_tasks += 1;
         }
-        let tasks_handle_clone = tasks_handle.clone();
+        let barrier_clone = barrier.clone();
 
-        threads_handle.push(rt.spawn(async move {
+        rt.spawn(async move {
             for _ in 0..current_tasks {
-                tasks_handle_clone.lock().await.push(tokio::task::spawn(async move { task() }));
+                let internal_barrier_clone = barrier_clone.clone();
+                tokio::task::spawn(async move { 
+                    task();
+                    internal_barrier_clone.wait().await;
+                });
             }
-        }));
+        });
     }
 
     rt.block_on(async {
-        for handle in threads_handle {
-            handle.await.unwrap();
-        }
-    });
-
-    rt.block_on(async {
-        for handle in tasks_handle.lock().await.iter_mut() {
-            handle.await.unwrap();
-        }
+        barrier.wait().await;
     });
 }
