@@ -1,4 +1,4 @@
-
+use crate::tasks;
 
 pub fn serial(threads: usize, tasks: u32, task: fn())
 {
@@ -50,4 +50,20 @@ pub fn parallel(threads: usize, tasks: u32, task: fn()) {
     rt.block_on(async {
         barrier.wait().await;
     });
+}
+
+pub fn fibonacci(threads: usize, num: usize) {
+    let rt = tokio::runtime::Builder::new_multi_thread()
+        .worker_threads(threads.into())
+        .build()
+        .unwrap();
+
+    let handle = rt.spawn(async move {
+        return tasks::fib(num).await;
+    });
+
+    let res = rt.block_on(async {
+        return handle.await.unwrap();
+    });
+    println!("{}", res);
 }
