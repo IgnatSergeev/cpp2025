@@ -22,9 +22,9 @@ async fn fib_helper(
     n: usize,
     results: Arc<Mutex<Vec<Arc<Mutex<Option<usize>>>>>>,
 ) -> usize {
-    let vec = results.lock().await;
-    let result_mutex = vec[n].clone();
-    drop(vec);
+    let result_mutex = { 
+        results.lock().await[n].clone()
+    };
 
     let mut result = result_mutex.lock().await;
     if result.is_some() {
