@@ -62,8 +62,7 @@ pub fn fibonacci(threads: usize, num: usize) {
         return tasks::fib(num).await;
     });
 
-    let res = rt.block_on(async {
+    let _ = rt.block_on(async {
         return handle.await.unwrap();
     });
-    println!("{}", res);
 }
