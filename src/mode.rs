@@ -1,7 +1,6 @@
 use std::fmt;
-use clap::ValueEnum;
 
-#[derive(Clone, ValueEnum)]
+#[derive(Clone)]
 pub enum Mode {
     Serial,
     Parallel,
