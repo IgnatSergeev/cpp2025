@@ -23,6 +23,7 @@ fn measure_mode(mode: Mode, tasks_map: std::collections::HashMap<std::string::St
 
     for task in tasks_map {
         for tasks_amount in [2_i32.pow(10), 2_i32.pow(14), 2_i32.pow(17), 2_i32.pow(19), 2_i32.pow(20)] {
+            mode_group.sampling_mode(criterion::SamplingMode::Flat);
             mode_group.sample_size(15);
             mode_group.measurement_time(std::time::Duration::from_secs(10));
             mode_group.throughput(criterion::Throughput::Elements(tasks_amount as u64));
@@ -39,7 +40,8 @@ fn measure_mode(mode: Mode, tasks_map: std::collections::HashMap<std::string::St
 
 fn measure_fibonacci(ctx: &mut criterion::Criterion) {
     let mut mode_group = ctx.benchmark_group("Fibonacci");
-    for fib_num in [2_usize.pow(10), 2_usize.pow(14), 2_usize.pow(17), 2_usize.pow(19), 2_usize.pow(20)] {
+    for fib_num in [30, 1000, 3000, 7000] {
+        mode_group.sampling_mode(criterion::SamplingMode::Flat);
         mode_group.sample_size(15);
         mode_group.measurement_time(std::time::Duration::from_secs(10));
         mode_group.bench_function(
