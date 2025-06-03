@@ -2,8 +2,3 @@
 *.obj
 c_posix_runtime_bench
 
-
-
-# Added by cargo
-
-/target
